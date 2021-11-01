@@ -7,6 +7,8 @@ var sourcemaps = require('gulp-sourcemaps');
 let clean_css = require('gulp-clean-css');
 let ttf2woff = require('gulp-ttf2woff');
 let ttf2woff2 = require('gulp-ttf2woff2');
+let uglify = require('gulp-uglify-es').default;
+let fileinclude = require('gulp-file-include');
 
 // название темы
 var themeName = 'fitness-hub';
@@ -29,6 +31,16 @@ gulp.task('serve', function(done) {
     });
 
     gulp.watch("**/*.php").on('change', () => {
+        browserSync.reload();
+        done();
+    });
+
+    gulp.watch("wp-content/themes/" + themeName + "/js/Main.js", gulp.series('js')).on('change', () => {
+        browserSync.reload();
+        done();
+    });
+
+    gulp.watch("wp-content/themes/" + themeName + "/js/includes/*.js", gulp.series('js')).on('change', () => {
         browserSync.reload();
         done();
     });
@@ -94,6 +106,18 @@ gulp.task('fonts', function(done) {
     done();
 });
 
+gulp.task('js', function(done) {
+	gulp.src("wp-content/themes/" + themeName + "/js/**/Main.js")
+        .pipe(fileinclude())
+		.pipe(rename("main.min.js"))
+        .pipe(sourcemaps.init())
+        .pipe(uglify())
+        .pipe(sourcemaps.write())
+		.pipe(gulp.dest("wp-content/themes/" + themeName + "/js"))
+		.pipe(browserSync.stream())
+    done();
+});
+
 gulp.task('directories', function () {
     return gulp.src('*.*', {read: false})
         .pipe(gulp.dest("wp-content/themes/" + themeName + "/fonts"))
@@ -101,8 +125,10 @@ gulp.task('directories', function () {
         .pipe(gulp.dest("wp-content/themes/" + themeName + "/fonts/woff"))
         .pipe(gulp.dest("wp-content/themes/" + themeName + "/fonts/woff2"))
         .pipe(gulp.dest("wp-content/themes/" + themeName + "/scss"))
+        .pipe(gulp.dest("wp-content/themes/" + themeName + "/scss/includes"))
         .pipe(gulp.dest("wp-content/themes/" + themeName + "/js"))
         .pipe(gulp.dest("wp-content/themes/" + themeName + "/js/libraries"))
+        .pipe(gulp.dest("wp-content/themes/" + themeName + "/js/includes"))
 });
 
-gulp.task('default', gulp.series('directories','sass', 'sass-css', 'serve'), gulp.parallel('fonts'));
+gulp.task('default', gulp.series('directories', 'sass', 'sass-css', 'js', 'serve'), gulp.parallel('fonts'));
