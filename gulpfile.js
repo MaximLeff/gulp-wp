@@ -2,7 +2,6 @@ var gulp = require('gulp');
 var browserSync = require('browser-sync').create();
 var sass = require ('gulp-sass') (require ('sass'));
 var autoprefixer = require('gulp-autoprefixer');
-var group_media = require('gulp-group-css-media-queries');
 var rename = require('gulp-rename');
 var sourcemaps = require('gulp-sourcemaps');
 let clean_css = require('gulp-clean-css');
@@ -10,16 +9,16 @@ let ttf2woff = require('gulp-ttf2woff');
 let ttf2woff2 = require('gulp-ttf2woff2');
 
 // название темы
-var themeName = 'UkrArtists';
+var themeName = 'fitness-hub';
 
 // название темы
-var domName = 'ukrArtist2.loc';
+var domName = '11test.loc';
 
 gulp.task('serve', function(done) {
 
     browserSync.init({
-        // proxy: 'http://' + domName + ':8080/',
-        proxy: 'http://' + domName,
+        proxy: 'http://' + domName + ':8080/',
+        // proxy: 'http://' + domName,
         host: domName,
         open: 'external'
     });
@@ -43,7 +42,6 @@ gulp.task('sass', function(done) {
         .pipe(sourcemaps.init())
         
         .pipe(sass())
-        // .pipe(group_media())
         .pipe(
             autoprefixer({
                 overrideBrowserslist: ['last 5 versions'],
@@ -73,7 +71,6 @@ gulp.task('sass-css', function(done) {
         .pipe(sourcemaps.init())
         
         .pipe(sass())
-        .pipe(group_media())
         .pipe(
             autoprefixer({
                 overrideBrowserslist: ['last 5 versions'],
@@ -94,8 +91,18 @@ gulp.task('fonts', function(done) {
 	gulp.src("wp-content/themes/" + themeName + "/fonts/ttf/**/*.ttf")
 		.pipe(ttf2woff2())
 		.pipe(gulp.dest("wp-content/themes/" + themeName + "/fonts/woff2"));
-        done();
+    done();
 });
 
+gulp.task('directories', function () {
+    return gulp.src('*.*', {read: false})
+        .pipe(gulp.dest("wp-content/themes/" + themeName + "/fonts"))
+        .pipe(gulp.dest("wp-content/themes/" + themeName + "/fonts/ttf"))
+        .pipe(gulp.dest("wp-content/themes/" + themeName + "/fonts/woff"))
+        .pipe(gulp.dest("wp-content/themes/" + themeName + "/fonts/woff2"))
+        .pipe(gulp.dest("wp-content/themes/" + themeName + "/scss"))
+        .pipe(gulp.dest("wp-content/themes/" + themeName + "/js"))
+        .pipe(gulp.dest("wp-content/themes/" + themeName + "/js/libraries"))
+});
 
-gulp.task('default', gulp.series('sass', 'sass-css', 'serve'), gulp.parallel('fonts'));
+gulp.task('default', gulp.series('directories','sass', 'sass-css', 'serve'), gulp.parallel('fonts'));
